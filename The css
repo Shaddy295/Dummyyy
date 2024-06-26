@@ -1,0 +1,96 @@
+### CSS (TableWithAddEditRow.css)
+
+```css
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.table-control-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.density-button {
+  position: relative;
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.density-button:hover {
+  background-color: #3e8e41;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.dropdown ul {
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown ul li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdown ul li:hover {
+  background-color: #f1f1f1;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.pagination-controls button {
+  background-color: #008CBA;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.pagination-controls button:hover {
+  background-color: #005580;
+}
+
+.pagination-controls select {
+  padding: 8px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #f2f2f2;
+}
+
+.table th span, .table td span {
+  margin-left: 5px;
+  cursor: pointer;
+}
