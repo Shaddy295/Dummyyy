@@ -1,0 +1,107 @@
+import React, { useState } from 'react';
+import './TableWithAddEditRow.css';
+
+const TableWithAddEditRow = () => {
+  const [sortOptions, setSortOptions] = useState({
+    id: false,
+    ipAddress: false,
+    auCode: false,
+    locationId: false,
+    mac: false,
+    site: false,
+    status: false,
+  });
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+
+  const handleSortOptionChange = (column) => {
+    setSortOptions((prev) => ({
+      ...prev,
+      [column]: !prev[column],
+    }));
+  };
+
+  const toggleSortDropdown = () => {
+    setIsSortDropdownOpen(!isSortDropdownOpen);
+  };
+
+  return (
+    <div>
+      <div className="table-controls">
+        <div className="dropdown">
+          <button className="dropdown-button" onClick={toggleSortDropdown}>
+            Sort
+          </button>
+          {isSortDropdownOpen && (
+            <div className="dropdown-content">
+              {Object.keys(sortOptions).map((column) => (
+                <label key={column} className="dropdown-option">
+                  <input
+                    type="checkbox"
+                    checked={sortOptions[column]}
+                    onChange={() => handleSortOptionChange(column)}
+                  />
+                  {column}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Your table and other components here */}
+    </div>
+  );
+};
+
+export default TableWithAddEditRow;
+
+
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.dropdown-button:hover {
+  background-color: #3e8e41;
+}
+
+.dropdown-content {
+  display: block;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  top: 100%;
+  left: 0;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-option input {
+  margin-right: 8px;
+}
+
+.dropdown-option:hover {
+  background-color: #f1f1f1;
+}
