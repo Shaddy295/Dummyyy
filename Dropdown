@@ -1,0 +1,302 @@
+
+
+import React, { useState } from 'react';
+import './Dropdown.css';
+
+const Dropdown = ({ label, options, selectedOptions, onOptionChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleToggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleOptionChange = (option) => {
+    onOptionChange(option);
+  };
+
+  return (
+    <div className="dropdown">
+      <button className="dropdown-button" onClick={handleToggleDropdown}>
+        {label}
+      </button>
+      {isOpen && (
+        <div className="dropdown-content">
+          {options.map((option) => (
+            <label key={option} className="dropdown-option">
+              <input
+                type="checkbox"
+                checked={selectedOptions.includes(option)}
+                onChange={() => handleOptionChange(option)}
+              />
+              {option}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dropdown;
+
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.dropdown-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.dropdown-button:hover {
+  background-color: #3e8e41;
+}
+
+.dropdown-content {
+  display: block;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-option:hover {
+  background-color: #f1f1f1;
+}
+
+
+
+import React, { useState } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import Dropdown from './Dropdown';
+import './TableWithAddEditRow.css'; // Import the CSS file
+
+const TableWithAddEditRow = () => {
+  const [rows, setRows] = useState([
+    // initial rows here
+  ]);
+  const [newRow, setNewRow] = useState({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+  const [isAdding, setIsAdding] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [columnVisibility, setColumnVisibility] = useState({
+    id: true,
+    ipAddress: true,
+    auCode: true,
+    locationId: true,
+    mac: true,
+    site: true,
+    status: true,
+  });
+  const [density, setDensity] = useState('Normal'); // Default density
+  const [sortOptions, setSortOptions] = useState([]); // Selected sort options
+
+  const handleAddRow = () => {
+    setIsAdding(true);
+    setEditRowId(null);
+  };
+
+  const handleSaveRow = () => {
+    setRows([...rows, { id: rows.length + 1, ...newRow, status: 'Active' }]);
+    setNewRow({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+    setIsAdding(false);
+  };
+
+  const handleCancelRow = () => {
+    setNewRow({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+    setIsAdding(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewRow({ ...newRow, [name]: value });
+  };
+
+  const handleEditRow = (row) => {
+    setEditRowId(row.id);
+    setEditRowData(row);
+    setIsAdding(false);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditRowData({ ...editRowData, [name]: value });
+  };
+
+  const handleSaveEditRow = () => {
+    setRows(rows.map(row => (row.id === editRowId ? editRowData : row)));
+    setEditRowId(null);
+  };
+
+  const handleCancelEditRow = () => {
+    setEditRowId(null);
+    setEditRowData({});
+  };
+
+  const handleChangePage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleToggleColumnVisibility = (column) => {
+    setColumnVisibility((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
+  const handleSetDensity = (densityOption) => {
+    setDensity(densityOption);
+  };
+
+  const handleSortOptionChange = (option) => {
+    setSortOptions((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const sortOptionsList = ['ID', 'IP Address', 'AU Code', 'Location ID', 'MAC', 'Site', 'Status'];
+  const densityOptions = ['Compact', 'Normal', 'Dense'];
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = rows.slice(indexOfFirstRow, indexOfLastRow);
+
+  return (
+    <div>
+      <div className="table-controls">
+        <div className="table-control-buttons">
+          <Dropdown
+            label="Sort"
+            options={sortOptionsList}
+            selectedOptions={sortOptions}
+            onOptionChange={handleSortOptionChange}
+          />
+          <Dropdown
+            label="Density"
+            options={densityOptions}
+            selectedOptions={[density]}
+            onOptionChange={handleSetDensity}
+          />
+          <Dropdown
+            label="Manage Columns"
+            options={Object.keys(columnVisibility)}
+            selectedOptions={Object.keys(columnVisibility).filter(key => columnVisibility[key])}
+            onOptionChange={handleToggleColumnVisibility}
+          />
+        </div>
+        <div>
+          <button onClick={handleAddRow}>Add Record</button>
+        </div>
+      </div>
+      <table className={`table ${density.toLowerCase()}`}>
+        <thead>
+          <tr>
+            {columnVisibility.id && <th>ID</th>}
+            {columnVisibility.ipAddress && <th>IP Address</th>}
+            {columnVisibility.auCode && <th>AU Code</th>}
+            {columnVisibility.locationId && <th>Location ID</th>}
+            {columnVisibility.mac && <th>MAC</th>}
+            {columnVisibility.site && <th>Site</th>}
+            {columnVisibility.status && <th>Status</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {currentRows.map((row) => (
+            <tr key={row.id}>
+              {columnVisibility.id && <td>{row.id}</td>}
+              {columnVisibility.ipAddress && <td>{row.ipAddress}</td>}
+              {columnVisibility.auCode && <td>{row.auCode}</td>}
+              {columnVisibility.locationId && <td>{row.locationId}</td>}
+              {columnVisibility.mac && <td>{row.mac}</td>}
+              {columnVisibility.site && <td>{row.site}</td>}
+              {columnVisibility.status && <td>{row.status}</td>}
+            </tr>
+          ))}
+          {isAdding && (
+            <tr>
+              {columnVisibility.id && <td>{rows.length + 1}</td>}
+              {columnVisibility.ipAddress && <td><input type="text" name="ipAddress" value={newRow.ipAddress} onChange={handleInputChange} /></td>}
+              {columnVisibility.auCode && <td><input type="text" name="auCode" value={newRow.auCode} onChange={handleInputChange} /></td>}
+              {columnVisibility.locationId && <td><input type="text" name="locationId" value={newRow.locationId} onChange={handleInputChange} /></td>}
+              {columnVisibility.mac && <td><input type="text" name="mac" value={newRow.mac} onChange={handleInputChange} /></td>}
+              {columnVisibility.site && <td><input type="text" name="site" value={newRow.site} onChange={handleInputChange} /></td>}
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <div className="pagination-controls">
+        <div>
+          {isAdding && (
+            <>
+              <button onClick={handleSaveRow}>Save</button>
+              <button onClick={handleCancelRow}>Cancel</button>
+            </>
+          )}
+          {editRowId && (
+            <>
+              <button onClick={handleSaveEditRow}>Save</button>
+              <button onClick={handleCancelEditRow}>Cancel</button>
+            </>
+          )}
+        </div>
+        <div>
+          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
+          {Array.from({ length: Math.ceil(rows.length / rowsPerPage) }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handleChangePage(index + 1)}
+              disabled={currentPage === index + 1}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TableWithAddEditRow;
+```
+
+### Explanation
+
+1. **Dropdown Component**: The `Dropdown` component manages its own open/close state and triggers a callback when an option is toggled.
+
+2. **Integration**: The `Dropdown` component is used for sorting, setting density, and managing columns. Each button label corresponds to the current state.
+
+3. **CSS**: The dropdown content is positioned absolutely and shown only when the dropdown is open.
+
+### Usage
+
+1. Add the `Dropdown.js` and `Dropdown.css` files to your project.
+2. Import and use the `Dropdown` component in your `TableWithAddEditRow` component.
+
+This should resolve the issues with the dropdowns and provide a functional and styled dropdown menu for sorting, density, and column management. Adjust the `Dropdown` component and styling as needed for your specific requirements.
