@@ -1,0 +1,84 @@
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.table-control-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown {
+  position: relative;
+  margin-left: 10px;
+}
+
+.dropdown button, .dropdown select {
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  border: none;
+cursor: pointer;
+}
+
+.dropdown button {
+min-width: 120px;
+}
+
+.dropdown button:hover, .dropdown select:hover {
+background-color: #3e8e41;
+}
+
+.dropdown select {
+display: none;
+position: absolute;
+top: 100%;
+left: 0;
+z-index: 1;
+}
+
+.dropdown.active select {
+display: block;
+}
+
+.pagination-controls {
+display: flex;
+justify-content: space-between;
+margin-top: 10px;
+}
+
+.pagination-controls button {
+background-color: #008CBA;
+color: white;
+border: none;
+cursor: pointer;
+padding: 8px;
+}
+
+.pagination-controls button:hover {
+background-color: #005580;
+}
+
+.pagination-controls select {
+padding: 8px;
+}
+
+.table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.table th, .table td {
+border: 1px solid #ddd;
+padding: 8px;
+text-align: left;
+}
+
+.table th {
+background-color: #f2f2f2;
+}
+
+ 
