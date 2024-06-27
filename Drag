@@ -1,0 +1,154 @@
+import React, { useState } from 'react';
+
+const FileDropzone = ({ onFileUpload }) => {
+  const [dragging, setDragging] = useState(false);
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragging(false);
+
+    const files = Array.from(event.dataTransfer.files);
+    onFileUpload(files);
+  };
+
+  const handleFileInputChange = (event) => {
+    const files = Array.from(event.target.files);
+    onFileUpload(files);
+  };
+
+  return (
+    <div 
+      className={`dropzone ${dragging ? 'active' : ''}`} 
+      onDragOver={handleDragOver} 
+      onDragLeave={handleDragLeave} 
+      onDrop={handleDrop}
+    >
+      <input 
+        type="file" 
+        multiple 
+        onChange={handleFileInputChange} 
+        style={{ display: 'none' }} 
+        id="fileInput"
+      />
+      <label htmlFor="fileInput">
+        {dragging ? 'Drop the files here...' : 'Drag & drop some files here, or click to select files'}
+      </label>
+    </div>
+  );
+};
+
+export default FileDropzone;
+
+
+
+
+
+
+import React, { useState } from 'react';
+import NestedDropdown from './Components/NestedDropdown';
+import FileDropzone from './Components/FileDropzone';
+import './App.css';
+
+const App = () => {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+  };
+
+  const handleFileUpload = (files) => {
+    setUploadedFiles(files);
+  };
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div className="header-container">
+          <h1>Building Technology Automation Utility</h1>
+        </div>
+      </header>
+      <main>
+        <div className="container">
+          <section className="reporting-section">
+            <div className="left-half">
+              <div className="card drag-drop-card">
+                <div className="upload-section">
+                  <h2>Risk and Governance Reporting</h2>
+                  <FileDropzone onFileUpload={handleFileUpload} />
+                  <div className="upload-box">
+                    <p>Drag & Drop (or)</p>
+                    <button className="choose-file">Choose a file</button>
+                  </div>
+                  <div className="buttons">
+                    <button className="upload-btn">Upload</button>
+                    <button className="generate-btn">Generate</button>
+                    <button className="download-btn">Download Reports</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="right-half">
+              <div className="card status-card">
+                <section className="status-section">
+                  <h2>Status</h2>
+                  {/* Status display area */}
+                </section>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="container">
+          <section className="reporting-section">
+            <div className="left-half1">
+              <div className="card status-card">
+                <section className="status-section">
+                  <h2>Chart</h2>
+                  <NestedDropdown selectedCategory={selectedCategory} handleCategoryChange={handleCategoryChange} />
+                  {/* Render PieChartComponent or other components as needed */}
+                </section>
+              </div>
+            </div>
+            <div className="right-half1">
+              <section className="password-compliance-section">
+                <h2>Password Compliance</h2>
+                {/* Placeholder table and buttons */}
+             ​⬤
+
+
+
+
+.dropzone {
+  border: 2px dashed #cccccc;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dropzone.active {
+  border-color: #36a2eb;
+}
+
+.dropzone label {
+  display: block;
+  margin: 0;
+  font-size: 16px;
+  color: #666666;
+  cursor: pointer;
+}
+
+
+
+
+
