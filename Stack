@@ -1,0 +1,54 @@
+import React from 'react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+
+const data = [
+  { name: 'Site A', uptime: 4000, downtime: 2400 },
+  { name: 'Site B', uptime: 3000, downtime: 1398 },
+  { name: 'Site C', uptime: 2000, downtime: 9800 },
+  { name: 'Site D', uptime: 2780, downtime: 3908 },
+  { name: 'Site E', uptime: 1890, downtime: 4800 },
+  { name: 'Site F', uptime: 2390, downtime: 3800 },
+  { name: 'Site G', uptime: 3490, downtime: 4300 },
+];
+
+const StackedAreaChart = () => {
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <AreaChart
+        data={data}
+        margin={{
+          top: 10, right: 30, left: 0, bottom: 0,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Area type="monotone" dataKey="uptime" stackId="1" stroke="#8884d8" fill="#8884d8" />
+        <Area type="monotone" dataKey="downtime" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+export default StackedAreaChart;
+
+
+
+
+import React from 'react';
+import StackedAreaChart from './StackedAreaChart';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>Uptime and Downtime Statistics</h1>
+      <StackedAreaChart />
+    </div>
+  );
+}
+
+export default App;
