@@ -1,0 +1,58 @@
+import React from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+
+const data = [
+  { name: 'Site A', active: 400, inactive: 240, repair: 240, disabled: 200 },
+  { name: 'Site B', active: 300, inactive: 139, repair: 221, disabled: 230 },
+  { name: 'Site C', active: 200, inactive: 980, repair: 229, disabled: 200 },
+  { name: 'Site D', active: 278, inactive: 390, repair: 200, disabled: 218 },
+  { name: 'Site E', active: 189, inactive: 480, repair: 218, disabled: 250 },
+  { name: 'Site F', active: 239, inactive: 380, repair: 250, disabled: 210 },
+  { name: 'Site G', active: 349, inactive: 430, repair: 210, disabled: 200 },
+];
+
+const MultiColumnChart = () => {
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <BarChart
+        data={data}
+        margin={{
+          top: 20, right: 30, left: 20, bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="active" fill="#8884d8" />
+        <Bar dataKey="inactive" fill="#82ca9d" />
+        <Bar dataKey="repair" fill="#ffc658" />
+        <Bar dataKey="disabled" fill="#d0ed57" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export default MultiColumnChart;
+
+
+
+
+
+
+import React from 'react';
+import MultiColumnChart from './MultiColumnChart';
+
+function App() {
+  return (
+    <div className="App">
+      <h1>Assets Status Per Site</h1>
+      <MultiColumnChart />
+    </div>
+  );
+}
+
+export default App;
