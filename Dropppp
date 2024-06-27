@@ -1,0 +1,52 @@
+import React, { useState } from 'react';
+import './App.css';
+
+const App = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedOptions, setSelectedOptions] = useState({
+    ID: false,
+    IPAddress: false,
+    AUCode: false,
+    LocationID: false,
+    Site: false,
+    MACAddress: false,
+    Status: false,
+  });
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleCheckboxChange = (event) => {
+    const { name, checked } = event.target;
+    setSelectedOptions((prevState) => ({
+      ...prevState,
+      [name]: checked,
+    }));
+  };
+
+  return (
+    <div className="App">
+      <div className="dropdown">
+        <button onClick={toggleDropdown}>Sort</button>
+        {showDropdown && (
+          <div className="dropdown-content">
+            {Object.keys(selectedOptions).map((option) => (
+              <label key={option}>
+                <input
+                  type="checkbox"
+                  name={option}
+                  checked={selectedOptions[option]}
+                  onChange={handleCheckboxChange}
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;
