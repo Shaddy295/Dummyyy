@@ -1,0 +1,212 @@
+import React, { useState } from 'react';
+import './TableWithAddEditRow.css';
+
+const TableWithAddEditRow = () => {
+  const [rows, setRows] = useState([
+    // initial rows here
+  ]);
+  const [newRow, setNewRow] = useState({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+  const [isAdding, setIsAdding] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [columnVisibility, setColumnVisibility] = useState({
+    id: true,
+    ipAddress: true,
+    auCode: true,
+    locationId: true,
+    mac: true,
+    site: true,
+    status: true,
+  });
+  const [density, setDensity] = useState('Normal'); // Default density
+  const [sortOptions, setSortOptions] = useState([]); // Selected sort options
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+
+  const handleAddRow = () => {
+    setIsAdding(true);
+    setEditRowId(null);
+  };
+
+  const handleSaveRow = () => {
+    setRows([...rows, { id: rows.length + 1, ...newRow, status: 'Active' }]);
+    setNewRow({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+    setIsAdding(false);
+  };
+
+  const handleCancelRow = () => {
+    setNewRow({ ipAddress: '', auCode: '', locationId: '', mac: '', site: '' });
+    setIsAdding(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewRow({ ...newRow, [name]: value });
+  };
+
+  const handleEditRow = (row) => {
+    setEditRowId(row.id);
+    setEditRowData(row);
+    setIsAdding(false);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditRowData({ ...editRowData, [name]: value });
+  };
+
+  const handleSaveEditRow = () => {
+    setRows(rows.map(row => (row.id === editRowId ? editRowData : row)));
+    setEditRowId(null);
+  };
+
+  const handleCancelEditRow = () => {
+    setEditRowId(null);
+    setEditRowData({});
+  };
+
+  const handleChangePage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleToggleColumnVisibility = (column) => {
+    setColumnVisibility((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
+  const handleSetDensity = (densityOption) => {
+    setDensity(densityOption);
+  };
+
+  const handleSortOptionChange = (option) => {
+    setSortOptions((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
+
+  const toggleSortDropdown = () => {
+    setIsSortDropdownOpen(!isSortDropdownOpen);
+  };
+
+  const sortOptionsList = ['ID', 'IP Address', 'AU Code', 'Location ID', 'MAC', 'Site', 'Status'];
+  const densityOptions = ['Compact', 'Normal', 'Dense'];
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = rows.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+  return (
+    <div>
+      <div className="table-controls">
+        <div className="dropdown">
+          <button className="dropdown-button" onClick={toggleSortDropdown}>
+            Sort
+          </button>
+          {isSortDropdownOpen && (
+            <div className="dropdown-content">
+              {sortOptionsList.map((option) => (
+                <label key={option} className="dropdown-option">
+                  <input
+                    type="checkbox"
+                    checked={sortOptions.includes(option)}
+                    onChange={() => handleSortOptionChange(option)}
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <div>
+          <button onClick={handleAddRow}>Add Record</button>
+        </div>
+      </div>
+      <table className={`table ${density.toLowerCase()}`}>
+        <thead>
+          <tr>
+            {columnVisibility.id && <th>ID</th>}
+            {columnVisibility.ipAddress && <th>IP Address</th>}
+            {columnVisibility.auCode && <th>AU Code</th>}
+            {columnVisibility.locationId && <th>Location ID</th>}
+            {columnVisibility.mac && <th>MAC</th>}
+            {columnVisibility.site && <th>Site</th>}
+            {columnVisibility.status && <th>Status</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {currentRows.map((row) => (
+            <tr key={row.id}>
+              {columnVisibility.id && <td>{row.id}</td>}
+              {columnVisibility.ipAddress && <td>{row.ipAddress}</td>}
+              {columnVisibility.auCode && <td>{row.auCode}</td>}
+              {columnVisibility.locationId && <td>{row.locationId}</td>}
+              {columnVisibility.mac && <td>{row.mac}</td>}
+              {columnVisibility.site && <td>{row.site}</td>}
+              {columnVisibility.status && <td>{row.status}</td>}
+            </tr>
+          ))}
+          {isAdding && (
+            <tr>
+              {columnVisibility.id && <td>{rows.length + 1}</td>}
+              {columnVisibility.ipAddress && <td><input type="text" name="ipAddress" value={newRow.ipAddress} onChange={handleInputChange} /></td>}
+              {columnVisibility.auCode && <td><input type="text" name="auCode" value={newRow.auCode} onChange={handleInputChange} /></td>}
+              {columnVisibility.locationId && <td><input type="text" name="locationId" value={newRow.locationId} onChange={handleInputChange} /></td>}
+              {columnVisibility.mac && <td><input type="text" name="mac" value={newRow.mac} onChange={handleInputChange} /></td>}
+              {columnVisibility.site && <td><input type="text" name="site" value={newRow.site} onChange={handleInputChange} /></td>}
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <div className="pagination-controls">
+        <div>
+          {isAdding && (
+            <>
+              <button onClick={handleSaveRow}>Save</button>
+              <button onClick={handleCancelRow}>Cancel</button>
+            </>
+          )}
+          {editRowId && (
+            <>
+              <button onClick={handleSaveEditRow}>Save</button>
+              <button onClick={handleCancelEditRow}>Cancel</button>
+            </>
+          )}
+        </div>
+        <div>
+          <button onClick={() => handleChangePage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
+            &lt;
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handleChangePage(index + 1)}
+              disabled={currentPage === index + 1}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button onClick={() => handleChangePage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>
+            &gt;
+          </button>
+          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TableWithAddEditRow;
