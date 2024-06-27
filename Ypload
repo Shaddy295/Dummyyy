@@ -1,0 +1,99 @@
+import React, { useState } from 'react';
+import FileDropzone from './Components/FileDropzone';
+import PieChartComponent from './Components/PieChartComponent';
+import './App.css';
+
+const App = () => {
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleFileUpload = (files) => {
+    setUploadedFiles(files);
+    setUploadSuccess(false); // Reset success message on new file upload
+  };
+
+  const handleUploadClick = () => {
+    if (uploadedFiles.length > 0) {
+      setUploadSuccess(true);
+      setTimeout(() => setUploadSuccess(false), 3000); // Hide message after 3 seconds
+    } else {
+      alert('Please upload a file first.');
+    }
+  };
+
+  const handleDownload = () => {
+    const dummyContent = "This is a dummy file content";
+    const blob = new Blob([dummyContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dummy.txt';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <div className="header-container">
+          <h1>Building Technology Automation Utility</h1>
+        </div>
+      </header>
+      <main>
+        <div className="container">
+          <section className="reporting-section">
+            <div className="left-half">
+              <div className="card drag-drop-card">
+                <div className="upload-section">
+                  <h2>Risk and Governance Reporting</h2>
+                  <FileDropzone onFileUpload={handleFileUpload} />
+                  <div className="buttons">
+                    <button className="upload-btn" onClick={handleUploadClick}>Upload</button>
+                    <button className="generate-btn">Generate</button>
+                    <button className="download-btn" onClick={handleDownload}>Download Reports</button>
+                  </div>
+                  {uploadSuccess && (
+                    <div className="upload-success-message">
+                      File uploaded successfully!
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="right-half">
+              <div className="card status-card">
+                <section className="status-section">
+                  <h2>Status</h2>
+                  {/* Status display area */}
+                </section>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="container">
+          <section className="reporting-section">
+            <div className="left-half1">
+              <div className="card status-card">
+                <section className="status-section">
+                  <h2>Chart</h2>
+                  <PieChartComponent />
+                </section>
+              </div>
+            </div>
+            <div className="right-half1">
+              <section className="password-compliance-section">
+                <h2>Password Compliance</h2>
+                {/* Placeholder table and buttons */}
+              </section>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;
