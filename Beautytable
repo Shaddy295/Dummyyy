@@ -1,0 +1,208 @@
+import React, { useState } from 'react';
+import { FaPlus, FaEdit, FaArrowsAlt, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import './AssetTable.css';
+
+const AssetTable = () => {
+  const initialRows = [
+    {
+      id: 1,
+      ipAddress: '192.168.1.1',
+      assetType: 'Camera',
+      assetLifeCycleState: 'Installed',
+      operationalState: 'Enabled',
+      operationalSubState: '',
+      missingAssetReport: 'No',
+      schedulerTaskState: 'draft',
+      taskType: 'user'
+    }
+  ];
+
+  const [rows, setRows] = useState(initialRows);
+  const [newRow, setNewRow] = useState({});
+  const [editRowId, setEditRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState({});
+  const [showNewRowInput, setShowNewRowInput] = useState(false);
+
+  const handleInputChange = (e, setFunction) => {
+    const { name, value } = e.target;
+    setFunction((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddRow = (index) => {
+    setShowNewRowInput(index);
+    setNewRow({});
+  };
+
+  const handleSaveNewRow = () => {
+    setRows((prev) => {
+      const newRows = [...prev];
+      newRows.splice(showNewRowInput + 1, 0, { id: prev.length + 1, ...newRow });
+      return newRows;
+    });
+    setShowNewRowInput(false);
+  };
+
+  const handleEditRow = (row) => {
+    setEditRowId(row.id);
+    setEditRowData(row);
+  };
+
+  const handleSaveEditRow = () => {
+    setRows((prev) => prev.map(row => row.id === editRowId ? editRowData : row));
+    setEditRowId(null);
+  };
+
+  const handleDeleteRow = (rowId) => {
+    setRows((prev) => prev.filter(row => row.id !== rowId));
+  };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    const updatedRows = Array.from(rows);
+    const [movedRow] = updatedRows.splice(result.source.index, 1);
+    updatedRows.splice(result.destination.index, 0, movedRow);
+    setRows(updatedRows);
+  };
+
+  const operationalSubStateOptions = {
+    Enabled: [],
+    Disabled: ['decommissioned', 'Replaced', 'Temporarily disabled for 3 days', 'Temp hours'],
+    Excluded: ['routing', 'subnet changed', 'VLAN issue', 'Gateway incorrect', 'defective hardware']
+  };
+
+  const assetTypes = ['Camera', 'NVR', 'Alarm panel', 'Access Control Panel'];
+  const assetLifeCycleStates = ['Instock', 'Installed', 'Active', 'Inactive', 'Uninstalled', 'Disposed'];
+
+  return (
+    <div>
+      <table className="asset-table">
+        <thead>
+          <tr>
+            <th>IP Address</th>
+            <th>Asset Type</th>
+            <th>Asset Life Cycle State</th>
+            <th>Actions</th>
+            <th>Operational State</th>
+            <th>Operational Sub State</th>
+            <th>Missing Asset Report</th>
+            <th>Scheduler Task State</th>
+            <th>Task Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <>
+              <tr key={row.id}>
+                <td>{editRowId === row.id ? <input name="ipAddress" value={editRowData.ipAddress} onChange={(e) => handleInputChange(e, setEditRowData)} /> : row.ipAddress}</td>
+                <td>{editRowId === row.id ? (
+                  <select name="assetType" value={editRowData.assetType} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                    {assetTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                  </select>
+                ) : row.assetType}</td>
+                <td>{editRowId === row.id ? (
+                  <select name="assetLifeCycleState" value={editRowData.assetLifeCycleState} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                    {assetLifeCycleStates.map(state => <option key={state} value={state}>{state}</option>)}
+                  </select>
+                ) : row.assetLifeCycleState}</td>
+                <td>
+                  <FaPlus onClick={() => handleAddRow(index)} />
+                  {editRowId === row.id ? <FaSave onClick={handleSaveEditRow} /> : <FaEdit onClick={() => handleEditRow(row)} />}
+                  <FaArrowsAlt />
+                  <FaTrash onClick={() => handleDeleteRow(row.id)} />
+                </td>
+                <td>{editRowId === row.id ? (
+                  <select name="operationalState" value={editRowData.operationalState} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                    <option value="Enabled">Enabled</option>
+                    <option value="Disabled">Disabled</option>
+                    <option value="Excluded">Excluded</option>
+                  </select>
+                ) : row.operationalState}</td>
+                <td>{editRowId === row.id ? (
+                  <select name="operationalSubState" value={editRowData.operationalSubState} onChange={(e) => handleInputChange(e, setEditRowData)} disabled={operationalSubStateOptions[editRowData.operationalState].length === 0}>
+                    <option value="">None</option>
+                    {operationalSubStateOptions[editRowData.operationalState].map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                ) : row.operationalSubState}</td>
+                <td>{editRowId === row.id ? <select name="missingAssetReport" value={editRowData.missingAssetReport} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select> : row.missingAssetReport}</td>
+                <td>{editRowId === row.id ? <select name="schedulerTaskState" value={editRowData.schedulerTaskState} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                  <option value="draft">draft</option>
+                  <option value="scheduled">scheduled</option>
+                  <option value="started">started</option>
+                  <option value="running">running</option>
+                  <option value="stopped">stopped</option>
+                  <option value="hung">hung</option>
+                  <option value="disabled">disabled</option>
+                </select> : row.schedulerTaskState}</td>
+                <td>{editRowId === row.id ? <select name="taskType" value={editRowData.taskType} onChange={(e) => handleInputChange(e, setEditRowData)}>
+                  <option value="user">user</option>
+                  <option value="system">system</select>}</td>
+              </tr>
+              {showNewRowInput === index && (
+                <tr key="new-row">
+                  <td><input name="ipAddress" value={newRow.ipAddress || ''} onChange={(e) => handleInputChange(e, setNewRow)} /></td>
+                  <td>
+                    <select name="assetType" value={newRow.assetType || ''} onChange={(e) => handleInputChange(e, setNewRow)}>
+                      {assetTypes.map(type => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <select name="assetLifeCycleState" value={newRow.assetLifeCycleState || ''} onChange={(e) => handleInputChange(e, setNewRow)}>
+                      {assetLifeCycleStates.map(state => <option key={state} value={state}>{state}</option>)}
+                    </select>
+                  </td>
+                  <td>
+                    <FaSave onClick={handleSaveNewRow} />
+                    <FaTimes onClick={() => setShowNewRowInput(false)} />
+                  </td>
+                  <td>
+                    <select name="operationalState" value={newRow.operationalState || 'Enabled'} onChange={(e) => handleInputChange(e, setNewRow)}>
+                      <option value="Enabled">Enabled</option>
+                      <option value="Disabled">Disabled</option>
+                      <option value="Excluded">Excluded</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="operationalSubState" value={newRow.operationalSubState || ''} onChange={(e) => handleInputChange(e, setNewRow)} disabled={operationalSubStateOptions[newRow.operationalState || 'Enabled'].length === 0}>
+                      <option value="">None</option>
+                      {operationalSubStateOptions[newRow.operationalState || 'Enabled'].map(option => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                  </td>
+              <td>
+                <select name="missingAssetReport" value={newRow.missingAssetReport || ''} onChange={(e) => handleInputChange(e, setNewRow)}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </td>
+              <td>
+                <select name="schedulerTaskState" value={newRow.schedulerTaskState || ''} onChange={(e) => handleInputChange(e, setNewRow)}>
+                  <option value="draft">draft</option>
+                  <option value="scheduled">scheduled</option>
+                  <option value="started">started</option>
+                  <option value="running">running</option>
+                  <option value="stopped">stopped</option>
+                  <option value="hung">hung</option>
+                  <option value="disabled">disabled</option>
+                </select>
+              </td>
+              <td>
+                <select name="taskType" value={newRow.taskType || ''} onChange={(e) => handleInputChange(e, setNewRow)}>
+                  <option value="user">user</option>
+                  <option value="system">system</option>
+                </select>
+              </td>
+            </tr>
+          )}
+        </>
+      ))}
+    </tbody>
+  </table>
+</div>
+);
+};
+
+export default AssetTable;
