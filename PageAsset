@@ -1,0 +1,289 @@
+import React, { useState } from 'react';
+import { FaPlus, FaEdit, FaArrowsAlt, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import './TableWithAddEditRow.css';
+
+const AssetTable = () => {
+  const initialRows = [
+    // Initial rows here
+  ];
+
+  const [rows, setRows] = useState(initialRows);
+  const [newRow, setNewRow] = useState({
+    ipAddress: '',
+    assetType: '',
+    assetLifeCycleState: '',
+    operationalState: '',
+    operationalSubState: '',
+    missingAssetReport: '',
+    schedulerTaskState: '',
+    taskType: ''
+  });
+  const [isAdding, setIsAdding] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [columnVisibility, setColumnVisibility] = useState({
+    ipAddress: true,
+    assetType: true,
+    assetLifeCycleState: true,
+    actions: true,
+    operationalState: true,
+    operationalSubState: true,
+    missingAssetReport: true,
+    schedulerTaskState: true,
+    taskType: true,
+  });
+  const [density, setDensity] = useState('Normal'); // Default density
+
+  const handleAddRow = () => {
+    setIsAdding(true);
+    setEditRowId(null);
+  };
+
+  const handleSaveRow = () => {
+    setRows([...rows, { id: rows.length + 1, ...newRow }]);
+    setNewRow({
+      ipAddress: '',
+      assetType: '',
+      assetLifeCycleState: '',
+      operationalState: '',
+      operationalSubState: '',
+      missingAssetReport: '',
+      schedulerTaskState: '',
+      taskType: ''
+    });
+    setIsAdding(false);
+  };
+
+  const handleCancelRow = () => {
+    setNewRow({
+      ipAddress: '',
+      assetType: '',
+      assetLifeCycleState: '',
+      operationalState: '',
+      operationalSubState: '',
+      missingAssetReport: '',
+      schedulerTaskState: '',
+      taskType: ''
+    });
+    setIsAdding(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewRow({ ...newRow, [name]: value });
+  };
+
+  const handleEditRow = (row) => {
+    setEditRowId(row.id);
+    setEditRowData(row);
+    setIsAdding(false);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditRowData({ ...editRowData, [name]: value });
+  };
+
+  const handleSaveEditRow = () => {
+    setRows(rows.map(row => (row.id === editRowId ? editRowData : row)));
+    setEditRowId(null);
+  };
+
+  const handleCancelEditRow = () => {
+    setEditRowId(null);
+    setEditRowData({});
+  };
+
+  const handleChangePage = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleSetDensity = (densityOption) => {
+    setDensity(densityOption);
+  };
+
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = rows.slice(indexOfFirstRow, indexOfLastRow);
+
+  const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+  return (
+    <div>
+      <div className="table-controls">
+        <div>
+          <button onClick={handleAddRow}><FaPlus /> Add Record</button>
+          <select onChange={(e) => handleSetDensity(e.target.value)} value={density}>
+            <option value="Compact">Compact</option>
+            <option value="Normal">Normal</option>
+            <option value="Dense">Dense</option>
+          </select>
+        </div>
+      </div>
+      <table className={`table ${density.toLowerCase()}`}>
+        <thead>
+          <tr>
+            {columnVisibility.ipAddress && <th>IP Address</th>}
+            {columnVisibility.assetType && <th>Asset Type</th>}
+            {columnVisibility.assetLifeCycleState && <th>Asset Life Cycle State</th>}
+            {columnVisibility.actions && <th>Actions</th>}
+            {columnVisibility.operationalState && <th>Operational State</th>}
+            {columnVisibility.operationalSubState && <th>Operational Sub State</th>}
+            {columnVisibility.missingAssetReport && <th>Missing Asset Report</th>}
+            {columnVisibility.schedulerTaskState && <th>Scheduler Task State</th>}
+            {columnVisibility.taskType && <th>Task Type</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {currentRows.map((row, index) => (
+            <React.Fragment key={row.id}>
+              <tr>
+                {columnVisibility.ipAddress && <td>{row.ipAddress}</td>}
+                {columnVisibility.assetType && <td>{row.assetType}</td>}
+                {columnVisibility.assetLifeCycleState && <td>{row.assetLifeCycleState}</td>}
+                {columnVisibility.actions && (
+                  <td>
+                    <FaEdit onClick={() => handleEditRow(row)} />
+                    <FaTrash onClick={() => setRows(rows.filter(r => r.id !== row.id))} />
+                  </td>
+                )}
+                {columnVisibility.operationalState && <td>{row.operationalState}</td>}
+                {columnVisibility.operationalSubState && <td>{row.operationalSubState}</td>}
+                {columnVisibility.missingAssetReport && <td>{row.missingAssetReport}</td>}
+                {columnVisibility.schedulerTaskState && <td>{row.schedulerTaskState}</td>}
+                {columnVisibility.taskType && <td>{row.taskType}</td>}
+              </tr>
+              {editRowId === row.id && (
+                <tr>
+                  {columnVisibility.ipAddress && <td><input type="text" name="ipAddress" value={editRowData.ipAddress} onChange={handleEditInputChange} /></td>}
+                  {columnVisibility.assetType && (
+                    <td>
+                      <select name="assetType" value={editRowData.assetType} onChange={handleEditInputChange}>
+                        <option value="Camera">Camera</option>
+                        <option value="NVR">NVR</option>
+                        <option value="Alarm panel">Alarm panel</option>
+                        <option value="Access Control Panel">Access Control Panel</option>
+                      </select>
+                    </td>
+                  )}
+                  {columnVisibility.assetLifeCycleState && (
+                    <td>
+                      <select name="assetLifeCycleState" value={editRowData.assetLifeCycleState} onChange={handleEditInputChange}>
+                        <option value="Instock">Instock</option>
+                        <option value="Installed">Installed</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Uninstalled">Uninstalled</option>
+                        <option value="Disposed">Disposed</option>
+                      </select>
+                    </td>
+                  )}
+                  {columnVisibility.actions && (
+                    <td>
+                      <FaSave onClick={handleSaveEditRow} />
+                      <FaTimes onClick={handleCancelEditRow} />
+                    </td>
+                  )}
+                  {columnVisibility.operationalState && <td><input type="text" name="operationalState" value={editRowData.operationalState} onChange={handleEditInputChange} /></td>}
+                  {columnVisibility.operationalSubState && <td><input type="text" name="operationalSubState" value={editRowData.operationalSubState} onChange={handleEditInputChange} /></td>}
+                  {columnVisibility.missingAssetReport && <td><input type="text" name="missingAssetReport" value={editRowData.missingAssetReport} onChange={handleEditInputChange} /></td>}
+                  {columnVisibility.schedulerTaskState && <td><input type="text" name="schedulerTaskState" value={editRowData.schedulerTaskState} onChange={handleEditInputChange} /></td>}
+                  {columnVisibility.taskType && <td><input type="text" name="taskType" value={editRowData.taskType} onChange={handleEditInputChange} /></td>}
+                </tr>
+              )}
+              {isAdding && (
+                <tr>
+                  {columnVisibility.ipAddress && <td><input type="text" name="ipAddress" value={newRow.ipAddress} onChange={handleInputChange} /></td>}
+                  {columnVisibility.assetType && (
+                    <td>
+                      <select name="assetType" value={newRow.assetType} onChange={handleInputChange}>
+                        <option value="Camera">Camera</option>
+                        <option value="NVR">NVR</option>
+                        <option value="Alarm panel">Alarm panel</option>
+                        <option value="Access Control Panel">Access Control Panel</option>
+                      </select>
+                    </td>
+                  )}
+                  {columnVisibility.assetLifeCycleState && (
+                    <td>
+                      <select name="assetLifeCycleState" value={newRow.assetLifeCycleState} onChange={handleInputChange}>
+                        <option value="Instock">Instock</option>
+                        <option value="Installed">Installed</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Uninstalled">Uninstalled</option>
+                        <option value="Disposed">Disposed</option>
+                      </select>
+                    </td>
+                  )}
+                  {columnVisibility.actions && (
+                    <td>
+                      <FaSave onClick={handleSaveRow} />
+                      <FaTimes onClick={handleCancelRow} />
+                    </td>
+                  )}
+                  {columnVisibility.operationalState && <td><input type="text" name="operationalState" value={newRow.operationalState} onChange={handleInputChange} /></td>}
+                  {columnVisibility.operationalSubState && <td><input type="text" name="operationalSubState" value={newRow.operationalSubState} onChange={handleInputChange} /></td>}
+                  {columnVisibility.missingAssetReport && <td><input type="text" name="missingAssetReport" value={newRow.missingAssetReport} onChange={handleInputChange} /></td>}
+                  {columnVisibility.schedulerTaskState && <td><input type="text" name="schedulerTaskState" value={newRow.schedulerTaskState} onChange={handleInputChange} /></td>}
+                  {columnVisibility.taskType && <td><input type="text" name="taskType" value={newRow.taskType} onChange={handleInputChange} /></td>}
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+      <div className="pagination-controls">
+        <div>
+          {isAdding && (
+            <>
+              <button onClick={handleSaveRow}>Save</button>
+              <button onClick={handleCancelRow}>Cancel</button>
+            </>
+          )}
+          {editRowId && (
+            <>
+              <button onClick={handleSaveEditRow}>Save</button>
+              <button onClick={handleCancelEditRow}>Cancel</button>
+            </>
+          )}
+        </div>
+        <div>
+          <button onClick={() => handleChangePage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
+            &lt;
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handleChangePage(index + 1)}
+              disabled={currentPage === index + 1}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button onClick={() => handleChangePage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>
+            &gt;
+          </button>
+          <select value={rowsPerPage} onChange={handleRowsPerPageChange}>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AssetTable;
+```
+
+This updated `AssetTable` component now includes pagination controls at the bottom, allowing users to navigate through pages of rows and change the number of rows displayed per page. The pagination controls function similarly to the previous example, ensuring smooth navigation and management of table data.
