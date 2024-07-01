@@ -1,0 +1,522 @@
+import React, { useState, useEffect } from 'react';
+import {
+  FaPlus,
+  FaEdit,
+  FaArrowsAlt,
+  FaTrash,
+  FaSave,
+  FaTimes,
+  FaSort,
+  FaColumns,
+  FaLayerGroup,
+  FaSearch,
+  FaEye,
+  FaDownload,
+} from 'react-icons/fa';
+import './TableWithAddEditRow.css';
+
+const generateDummyData = () => {
+  const dummyData = [];
+  for (let i = 1; i <= 50; i++) {
+    dummyData.push({
+      id: i,
+      ipAddress: `192.168.1.${i}`,
+      aucode: `AU${i}`,
+      locationId: `LOC${i}`,
+      macAddress: `00:1A:2B:3C:4D:${(i % 100).toString().padStart(2, '0')}`,
+      site: `Site ${i}`,
+      status: i % 2 === 0 ? 'Active' : 'Inactive',
+      action: `Action ${i}`,
+    });
+  }
+  return dummyData;
+};
+
+const AssetTable = () => {
+  const [rows, setRows] = useState([]);
+  const [newRow, setNewRow] = useState({});
+  const [editRowId, setEditRowId] = useState(null);
+  const [editRowData, setEditRowData] = useState({});
+  const [showNewRowInput, setShowNewRowInput] = useState(false);
+  const [sortColumn, setSortColumn] = useState('');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [columnVisibility, setColumnVisibility] = useState({
+    ipAddress: true,
+    aucode: true,
+    locationId: true,
+    macAddress: true,
+    site: true,
+    status: true,
+    action: true,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [rowHeight, setRowHeight] = useState('normal');
+
+  useEffect(() => {
+    const initialData = generateDummyData();
+    setRows(initialData);
+  }, []);
+
+  const handleInputChange = (e, setFunction) => {
+    const { name, value } = e.target;
+    setFunction((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddRow = (index) => {
+    setShowNewRowInput(index);
+    setNewRow({});
+  };
+
+  const handleSaveNewRow = () => {
+    setRows((prev) => {
+      const newRows = [...prev];
+      newRows.splice(showNewRowInput + 1, 0, { id: prev.length + 1, ...newRow });
+      return newRows;
+    });
+    setShowNewRowInput(false);
+  };
+
+  const handleEditRow = (row) => {
+    setEditRowId(row.id);
+    setEditRowData(row);
+  };
+
+  const handleSaveEditRow = () => {
+    setRows((prev) => prev.map((row) => (row.id === editRowId ? editRowData : row)));
+    setEditRowId(null);
+  };
+
+  const handleDeleteRow = (rowId) => {
+    setRows((prev) => prev.filter((row) => row.id !== rowId));
+  };
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const applySort = (data) => {
+    if (sortColumn && sortDirection) {
+      return [...data].sort((a, b) => {
+        const columnA = a[sortColumn];
+        const columnB = b[sortColumn];
+        if (sortDirection === 'asc') {
+          if (columnA < columnB) return -1;
+          if (columnA > columnB) return 1;
+          return 0;
+        } else {
+          if (columnA > columnB) return -1;
+          if (columnA < columnB) return 1;
+          return 0;
+        }
+      });
+    }
+    return data;
+  };
+
+  const handleChangePage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleColumnVisibilityChange = (column) => {
+    setColumnVisibility((prev) => ({ ...prev, [column]: !prev[column] }));
+  };
+
+  const handleToggleSearch = () => {
+    setShowSearch(!showSearch);
+    setSearchTerm('');
+  };
+
+  const handleSearch = () => {
+    if (!searchTerm) return rows;
+    return rows.filter((row) =>
+      Object.values(row).some(
+        (value) =>
+          typeof value === 'string' && value.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  };
+
+  const handleSelectRow = (rowId) => {
+    const index = selectedRows.indexOf(rowId);
+    if (index === -1) {
+      setSelectedRows((prev) => [...prev, rowId]);
+    } else {
+      setSelectedRows((prev) => prev.filter((id) => id !== rowId));
+    }
+  };
+
+  const handleSelectAllRows = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(rows.map((row) => row.id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const filteredRows = handleSearch();
+  const sortedRows = applySort(filteredRows);
+  const lastIndex = currentPage * itemsPerPage;
+  const firstIndex = lastIndex - itemsPerPage;
+  const visibleRows = sortedRows.slice(firstIndex, lastIndex);
+  const totalPages = Math.ceil(sortedRows.length / itemsPerPage);
+
+  const handlePreview = () => {
+    setShowPreview(true);
+  };
+
+  const handleClosePreview = () => {
+    setShowPreview(false);
+  };
+
+  const handleDownload = () => {
+    alert('Implement download functionality');
+  };
+
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
+
+  const handleDensityChange = (density) => {
+    setRowHeight(density);
+  };
+
+  return (
+    <div>
+      <div className="table-controls">
+        <button className="preview-btn" onClick={handlePreview}>
+          <FaEye /> Preview
+        </button>
+        <div className="dropdown">
+          <button className="dropbtn">
+            <FaSort /> Sort
+          </button>
+          <div className="dropdown-content sort-dropdown">
+            {Object.keys(columnVisibility).map((column) =>
+              columnVisibility[column] ? (
+                <label key={column}>
+                  <input
+                    type="checkbox"
+                    checked={sortColumn === column}
+                    onChange={() => handleSort(column)}
+                  />{' '}
+                  {column}
+                </label>
+              ) : null
+            )}
+          </div>
+        </div>
+        <div className="dropdown">
+          <button className="dropbtn">
+            <FaColumns /> Manage Columns
+          </button>
+          <div className="dropdown-content">
+            {Object.keys(columnVisibility).map((column) => (
+              <label key={column}>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => handleColumnVisibilityChange(column)}
+                />{' '}
+                {column}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="dropdown density-dropdown">
+          <button className="dropbtn density-btn">
+            <FaLayerGroup /> Density
+          </button>
+          <div className="dropdown-content">
+            <select onChange={(e) => handleDensityChange(e.target.value)}>
+              <option value="compact">Compact</option>
+              <option value="dense">Dense</option>
+              <option value="normal">Normal</option>
+            </select>
+          </div>
+        </div>
+        <div className="search-container">
+          {!showSearch && (
+            <button className="search-btn" onClick={handleToggleSearch}>
+              <FaSearch /> Search
+            </button>
+          )}
+          {showSearch && (
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          )}
+        </div>
+      </div>
+
+      <table className={`asset-table ${rowHeight}`}>
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={selectAll}
+                onChange={handleSelectAllRows}
+              />
+            </th>
+            {columnVisibility.ipAddress && <th>IP Address</th>}
+            {columnVisibility.aucode && <th>AU Code</th>}
+            {columnVisibility.locationId && <th>Location ID</th>}
+            {columnVisibility.macAddress && <th>MAC Address</th>}
+            {columnVisibility.site && <th>Site</th>}
+            {columnVisibility.status && <th>Status</th>}
+            {columnVisibility.action && <th>Action</th>}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {visibleRows.map((row, index) => (
+            <React.Fragment key={row.id}>
+              <tr className={selectedRows.includes(row.id) ? 'selected' : ''}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.includes(row.id)}
+                    onChange={() => handleSelectRow(row.id)}
+                  />
+                </td>
+                {columnVisibility.ipAddress && (
+                  <td>
+                    {editRowId === row.id ? (
+                      <input
+                        type="text"
+                        name="ipAddress"
+                        value={editRowData.ipAddress}
+                        onChange={(e) => handleInputChange(e, setEditRowData)}
+                      />
+                    ) : (
+                      row.ipAddress
+                    )}
+                  </td>
+                )}
+                {columnVisibility.aucode && (
+                  <td>
+                    {editRowId === row.id ? (
+                      <input
+                        type="text"
+                        name="aucode"
+                        value={editRowData.aucode}
+                        onChange={(e) => handleInputChange(e, setEditRowData)}
+                      />
+                    ) : (
+                      row.aucode
+                    )}
+                  </td>
+                )}
+                {columnVisibility.locationId && (
+                  <td>
+                    {editRowId === row.id ? (
+                      <input
+                        type="text"
+                        name="locationId"
+                        value={editRowData.locationId}
+                        onChange={(e) => handleInputChange(e, setEditRowData)}
+                      />
+                    ) : (
+                      row.locationId
+                    )}
+                  </td>
+                )}
+                {columnVisibility.macAddress && (
+                  <td>
+                    {editRowId === row.id ? (
+                      <input
+                        type="text"
+                        name="macAddress"
+                        value={editRowData.macAddress}
+                        onChange={(e) => handleInputChange(e, setEditRowData)}
+                      />
+                    ) : (
+                      row.macAddress
+                    )}
+                  </td>
+                )}
+                {columnVisibility.site && <td>{row.site}</td>}
+                {columnVisibility.status && <td>{row.status}</td>}
+                {columnVisibility.action && <td>{row.action}</td>}
+                <td>
+                  {editRowId === row.id ? (
+                    <>
+                      <button onClick={handleSaveEditRow}>
+                        <FaSave /> Save
+                      </button>
+                      <button onClick={() => setEditRowId(null)}>
+                        <FaTimes /> Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => handleEditRow(row)}>
+                        <FaEdit /> Edit
+                      </button>
+                      <button onClick={() => handleDeleteRow(row.id)}>
+                        <FaTrash /> Delete
+                      </button>
+                      <button onClick={() => handleAddRow(index)}>
+                        <FaPlus /> Add Below
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+              {showNewRowInput === index && (
+                <tr>
+                  <td></td>
+                  {columnVisibility.ipAddress && (
+                    <td>
+                      <input
+                        type="text"
+                        name="ipAddress"
+                        value={newRow.ipAddress || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.aucode && (
+                    <td>
+                      <input
+                        type="text"
+                        name="aucode"
+                        value={newRow.aucode || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.locationId && (
+                    <td>
+                      <input
+                        type="text"
+                        name="locationId"
+                        value={newRow.locationId || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.macAddress && (
+                    <td>
+                      <input
+                        type="text"
+                        name="macAddress"
+                        value={newRow.macAddress || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.site && (
+                    <td>
+                      <input
+                        type="text"
+                        name="site"
+                        value={newRow.site || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.status && (
+                    <td>
+                      <input
+                        type="text"
+                        name="status"
+                        value={newRow.status || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  {columnVisibility.action && (
+                    <td>
+                      <input
+                        type="text"
+                        name="action"
+                        value={newRow.action || ''}
+                        onChange={(e) => handleInputChange(e, setNewRow)}
+                      />
+                    </td>
+                  )}
+                  <td>
+                    <button onClick={handleSaveNewRow}>
+                      <FaSave /> Save
+                    </button>
+                    <button onClick={() => setShowNewRowInput(false)}>
+                      <FaTimes /> Cancel
+                    </button>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
+      <div className="pagination-controls">
+        <label>
+          Items per page:
+          <select
+            value={itemsPerPage}
+            onChange={(e) => handleItemsPerPageChange(e.target.value)}
+          >
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select>
+        </label>
+        <button
+          onClick={() => handleChangePage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => handleChangePage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+
+      {showPreview && (
+        <div className="preview-modal">
+          <div className="preview-content">
+            <h2>Preview Data</h2>
+            <pre>{JSON.stringify(rows, null, 2)}</pre>
+            <button className="close-btn" onClick={handleClosePreview}>
+              <FaTimes /> Close
+            </button>
+            <button className="download-btn" onClick={handleDownload}>
+              <FaDownload /> Download
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AssetTable;
+```
+
+This code includes:
+- The new headers and related data.
+- A function to generate dummy data with the new headers.
+- The rest of the table logic adjusted to accommodate the new headers.
