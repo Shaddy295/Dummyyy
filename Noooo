@@ -1,0 +1,212 @@
+import React, { useState, useEffect } from 'react';
+import { FaSort, FaEdit, FaTrash, FaSave, FaTimes, FaCog } from 'react-icons/fa';
+
+const TableComponent = ({ rows }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(rows.length);
+  const [visibleRows, setVisibleRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [showManageColumns, setShowManageColumns] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    ipAddress: true,
+    assetType: true,
+    macAddress: true,
+    locationId: true,
+    site: true,
+    assetLifeCycleState: true,
+    operationalState: false,
+    schedulerTaskState: false,
+    taskType: false,
+    action: true,
+  });
+
+  useEffect(() => {
+    setTotalItems(rows.length);
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    setVisibleRows(rows.slice(startIdx, endIdx));
+  }, [rows, currentPage, itemsPerPage]);
+
+  const handleSort = (column) => {
+    const order = sortColumn === column && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortColumn(column);
+    setSortOrder(order);
+    const sortedRows = [...rows].sort((a, b) => {
+      if (a[column] < b[column]) return order === 'asc' ? -1 : 1;
+      if (a[column] > b[column]) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setVisibleRows(sortedRows.slice(0, itemsPerPage));
+  };
+
+  const handleSelectRow = (rowId) => {
+    setSelectedRows((prevSelected) =>
+      prevSelected.includes(rowId)
+        ? prevSelected.filter((id) => id !== rowId)
+        : [...prevSelected, rowId]
+    );
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  const handleChangePage = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const toggleColumnVisibility = (columnName) => {
+    setColumnVisibility((prevVisibility) => ({
+      ...prevVisibility,
+      [columnName]: !prevVisibility[columnName],
+    }));
+  };
+
+  const handleEditRow = (row) => {
+    // Placeholder for handling edit row functionality
+    console.log('Editing row:', row);
+  };
+
+  const handleDeleteRow = (rowId) => {
+    // Placeholder for handling delete row functionality
+    console.log('Deleting row with ID:', rowId);
+  };
+
+  return (
+    <div className="table-container">
+      <div className="manage-columns">
+        <button className="manage-columns-btn" onClick={() => setShowManageColumns(!showManageColumns)}>
+          Manage Columns <FaCog />
+        </button>
+        {showManageColumns && (
+          <div className="manage-columns-list">
+            <label>
+              <input
+                type="checkbox"
+                checked={columnVisibility.operationalState}
+                onChange={() => toggleColumnVisibility('operationalState')}
+              />
+              Operational State
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={columnVisibility.schedulerTaskState}
+                onChange={() => toggleColumnVisibility('schedulerTaskState')}
+              />
+              Scheduler Task State
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={columnVisibility.taskType}
+                onChange={() => toggleColumnVisibility('taskType')}
+              />
+              Task Type
+            </label>
+          </div>
+        )}
+      </div>
+      <table className="table">
+        <thead>
+          <tr>
+            <th></th>
+            {columnVisibility.ipAddress && (
+              <th onClick={() => handleSort('ipAddress')}>
+                IP Address {sortColumn === 'ipAddress' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.assetType && (
+              <th onClick={() => handleSort('assetType')}>
+                Asset Type {sortColumn === 'assetType' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.macAddress && (
+              <th onClick={() => handleSort('macAddress')}>
+                Mac Address {sortColumn === 'macAddress' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.locationId && (
+              <th onClick={() => handleSort('locationId')}>
+                Location ID {sortColumn === 'locationId' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.site && (
+              <th onClick={() => handleSort('site')}>
+                Site {sortColumn === 'site' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.assetLifeCycleState && (
+              <th onClick={() => handleSort('assetLifeCycleState')}>
+                Asset Life Cycle State {sortColumn === 'assetLifeCycleState' && <FaSort />}
+              </th>
+            )}
+            {columnVisibility.action && <th>Action</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {visibleRows.map((row) => (
+            <tr key={row.id}>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={selectedRows.includes(row.id)}
+                  onChange={() => handleSelectRow(row.id)}
+                />
+              </td>
+              {columnVisibility.ipAddress && <td>{row.ipAddress}</td>}
+              {columnVisibility.assetType && <td>{row.assetType}</td>}
+              {columnVisibility.macAddress && <td>{row.macAddress}</td>}
+              {columnVisibility.locationId && <td>{row.locationId}</td>}
+              {columnVisibility.site && <td>{row.site}</td>}
+              {columnVisibility.assetLifeCycleState && <td>{row.assetLifeCycleState}</td>}
+              {columnVisibility.action && (
+                <td>
+                  <button className="edit-btn" onClick={() => handleEditRow(row)}>
+                    <FaEdit />
+                  </button>
+                  <button className="delete-btn" onClick={() => handleDeleteRow(row.id)}>
+                    <FaTrash />
+                  </button>
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="pagination">
+        <button onClick={() => handleChangePage(currentPage - 1)} disabled={currentPage === 1}>
+          Previous
+        </button>
+        <span>Page {currentPage}</span>
+        <button onClick={() => handleChangePage(currentPage + 1)} disabled={currentPage === Math.ceil(totalItems / itemsPerPage)}>
+          Next
+        </button>
+        <div className="items-per-page">
+          <label>
+            Rows per page:
+            <select value={itemsPerPage} onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value, 10))}>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
+        </div>
+        <div className="total-items">
+          {totalItems === 0 ? (
+            <span>No items</span>
+          ) : (
+            <span>Total items: {totalItems}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TableComponent;
